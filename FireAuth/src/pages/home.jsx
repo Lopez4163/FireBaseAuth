@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useContext } from "react"
 import { Navigate } from "react-router-dom"
 import {
   createUserWithEmailAndPassword,
@@ -7,11 +7,14 @@ import {
 import { auth } from "../firebase"
 import GoogleButton from "react-google-button"
 import { signInWithGoogleRedirect } from "../firebase"
+import { AuthContext } from "../auth/context/context"
 
-const home = ({ user }) => {
+const home = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isSignUpActive, setIsSignUpActive] = useState(true)
+
+  const { fireSignUp, fireSignIn, user, isFetching } = useContext(AuthContext)
 
   const changeMethod = () => {
     setIsSignUpActive(!isSignUpActive)
@@ -21,41 +24,34 @@ const home = ({ user }) => {
     signInWithGoogleRedirect()
   }
 
-  const handleSignUp = e => {
-    if (!email || !password) {
-      return console.log("EMPTY FIELDS")
-    }
+  const handleSignUp = async e => {
     e.preventDefault()
-    createUserWithEmailAndPassword(auth, email, password)
-      .then(userCredential => {
-        const user = userCredential.user
-        console.log("user: ", user)
-      })
-      .catch(err => {
-        const errorCode = err.code
-        const errorMessage = err.message
-        console.log(errorCode, errorMessage)
-      })
+    try {
+      console.log(email, password)
+      await fireSignUp(email, password)
+      if (user) {
+        console.log(user)
+        return <Navigate to="/private"></Navigate>
+      }
+    } catch (err) {
+      console.log(err.message)
+    }
   }
 
-  const handleSignIn = e => {
-    if (!email || !password) {
-      return console.log("EMPTY FIELDS")
-    }
+  const handleSignIn = async e => {
     e.preventDefault()
-    signInWithEmailAndPassword(auth, email, password)
-      .then(userCredential => {
-        const user = userCredential.user
-        console.log("user: ", user)
-      })
-      .catch(err => {
-        const errorCode = err.code
-        const errorMessage = err.message
-        console.log(errorCode, errorMessage)
-      })
+    try {
+      console.log(email, password)
+      await fireSignIn(email, password)
+      if (user) {
+        console.log(user)
+        return <Navigate to="/private"></Navigate>
+      }
+    } catch (err) {
+      console.log(err.message)
+    }
   }
 
-  //Navigate on login
   if (user) {
     return <Navigate to="/private"></Navigate>
   }
@@ -84,6 +80,8 @@ const home = ({ user }) => {
             }}
           />
           {isSignUpActive && <button onClick={handleSignUp}>Sign Up</button>}
+          {!isSignUpActive && <button onClick={handleSignIn}>Login</button>}
+
           {!isSignUpActive && <GoogleButton onClick={handleSignInWithGoogle} />}
 
           <a onClick={changeMethod}>{isSignUpActive ? "Login" : "SignUp"}</a>

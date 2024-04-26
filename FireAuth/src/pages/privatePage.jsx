@@ -1,17 +1,16 @@
-import React from "react"
-import { signOut } from "firebase/auth"
-import { auth } from "../firebase"
+import React, { useContext } from "react"
+import AddClass from "../components/addClass"
+import ScheduleView from "../components/scheduleView"
+import { AuthContext } from "../auth/context/context"
 
 const privatePage = () => {
-  const handleSignOut = () => {
-    signOut(auth)
-      .then(() => console.log("Sign Out"))
-      .catch(error => console.log(error.message))
-  }
+  const { handleLogout } = useContext(AuthContext)
 
   return (
     <section>
-      <button onClick={handleSignOut}>Log Out</button>
+      <AddClass />
+      <ScheduleView />
+      <button onClick={handleLogout}>Log Out</button>
     </section>
   )
 }
